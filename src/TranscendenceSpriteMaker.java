@@ -36,7 +36,7 @@ public class TranscendenceSpriteMaker {
 	public static void main(String[] args) throws IOException {
 		if (dir.isDirectory()) { // make sure it's a directory
 			for (final File f : dir.listFiles(IMAGE_FILTER)) {
-				createSprite2(f);
+				pencilSketch(f);
 			}
 		}
 	}
@@ -160,22 +160,8 @@ public class TranscendenceSpriteMaker {
 		for(int y = 0; y < height-1; y++) {
 			for(int x = 0; x < width-1; x++) {
 				int c1 = image.getRGB(x, y);
-				int r1 = (c1 & 0x00ff0000) >> 16;
-				int g1 = (c1 & 0x0000ff00) >> 8;
-				int b1 = c1 & 0x000000ff;
-				int a1 = (c1 >> 24) & 0xff;
-				
 				int c2 = image.getRGB(x+1, y+1);
-				int r2 = (c2 & 0x00ff0000) >> 16;
-				int g2 = (c2 & 0x0000ff00) >> 8;
-				int b2 = c2 & 0x000000ff;
-				int a2 = (c2 >> 24) & 0xff;
-				if(
-						Math.abs(r1 - r2) > tolerance ||
-						Math.abs(g1 - g2) > tolerance ||
-						Math.abs(b1 - b2) > tolerance ||
-						Math.abs(a1 - a2) > tolerance
-						) {
+				if(getMaxChannelDifference(c1, c2) > tolerance) {
 					pixels[i] = new Color(0).getRGB();
 				} else {
 					pixels[i] = new Color(255, 255, 255, 255).getRGB();
@@ -187,6 +173,42 @@ public class TranscendenceSpriteMaker {
 		BufferedImage b = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		setPixels(b, pixels);
 		return b;
+	}
+	public static int getRGBDifference(int rgb1, int rgb2) {
+		int r1 = (rgb1 & 0x00ff0000) >> 16;
+		int g1 = (rgb1 & 0x0000ff00) >> 8;
+		int b1 = (rgb1 & 0x000000ff);
+		int a1 = (rgb1 >> 24) & 0xff;
+		
+		int r2 = (rgb2 & 0x00ff0000) >> 16;
+		int g2 = (rgb2 & 0x0000ff00) >> 8;
+		int b2 = (rgb2 & 0x000000ff);
+		int a2 = (rgb2 >> 24) & 0xff;
+		
+		return Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2) + Math.abs(a1 - a2);
+	}
+	public static int getMaxChannelDifference(int rgb1, int rgb2) {
+		int r1 = (rgb1 & 0x00ff0000) >> 16;
+		int g1 = (rgb1 & 0x0000ff00) >> 8;
+		int b1 = (rgb1 & 0x000000ff);
+		int a1 = (rgb1 >> 24) & 0xff;
+		
+		int r2 = (rgb2 & 0x00ff0000) >> 16;
+		int g2 = (rgb2 & 0x0000ff00) >> 8;
+		int b2 = (rgb2 & 0x000000ff);
+		int a2 = (rgb2 >> 24) & 0xff;
+		
+		return max(Math.abs(r1 - r2), Math.abs(g1 - g2), Math.abs(b1 - b2), Math.abs(a1 - a2));
+	}
+	public static int max(int... numbers) {
+		return max(numbers.length-1, numbers);
+	}
+	public static int max(int start, int[] numbers) {
+		if(start > 1) {
+			return Math.max(numbers[1], numbers[0]);
+		} else {
+			return Math.max(numbers[start], max(start-1, numbers));
+		}
 	}
 	public static void setPixels(BufferedImage b, int[] pixels) {
 		int[] d = ( (DataBufferInt) b.getRaster().getDataBuffer() ).getData();
