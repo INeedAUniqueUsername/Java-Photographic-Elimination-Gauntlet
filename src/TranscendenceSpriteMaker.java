@@ -157,8 +157,12 @@ public class TranscendenceSpriteMaker {
 		int height = image.getHeight();
 		int[] pixels = new int[width * height];
 		int i = 0;
-		for(int y = 0; y < height-1; y++) {
-			for(int x = 0; x < width-1; x++) {
+		for(int y = 0; y < height; y++) {
+			for(int x = 0; x < width; x++) {
+				if(x == width-1 || y == height-1) {
+					i++;
+					continue;
+				}
 				int c1 = image.getRGB(x, y);
 				int c2 = image.getRGB(x+1, y+1);
 				if(getMaxChannelDifference(c1, c2) > tolerance) {
