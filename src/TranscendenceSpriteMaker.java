@@ -36,21 +36,24 @@ public class TranscendenceSpriteMaker {
 	public static void main(String[] args) throws IOException {
 		if (dir.isDirectory()) { // make sure it's a directory
 			for (final File f : dir.listFiles(IMAGE_FILTER)) {
-				pencilSketch(f);
+				pencilSketch2(f);
 			}
 		}
 	}
 	public static void pencilSketch(File f) throws IOException {
 		createSprite(f, 20);
 	}
+	public static void pencilSketch2(File f) throws IOException {
+		createSprite(f, 15);
+	}
 	public static void createSprite(File f, int tolerance) throws IOException {
-		writeImage(edgeDetect(ImageIO.read(f), tolerance), f.getName());
+		writeImage(edgeDetectChannel(ImageIO.read(f), tolerance), f.getName());
 	}
 	public static void createSprite(File f, double scale, int tolerance) throws IOException {
-		writeImage(edgeDetect(scaleImage(ImageIO.read(f), scale), tolerance), f.getName());
+		writeImage(edgeDetectChannel(scaleImage(ImageIO.read(f), scale), tolerance), f.getName());
 	}
-	public static void createSprite2(File f) throws IOException {
-		writeImage(swapColors(ImageIO.read(f)), f.getName());
+	public static void createSprite2(File f, int tolerance) throws IOException {
+		writeImage(edgeDetectRGB(ImageIO.read(f), tolerance), f.getName());
 	}
 	public static BufferedImage scaleImage(BufferedImage image, double scale) {
 		int width = (int) (image.getWidth()*scale);
@@ -152,23 +155,29 @@ public class TranscendenceSpriteMaker {
 		setPixels(b, pixels);
 		return b;
 	}
-	public static BufferedImage edgeDetect(BufferedImage image, int tolerance) {
+	public static BufferedImage edgeDetectChannel(BufferedImage image, int tolerance) {
 		int width = image.getWidth();
 		int height = image.getHeight();
 		int[] pixels = new int[width * height];
 		int i = 0;
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
-				if(x == width-1 || y == height-1) {
+				if(x == 0 || y == 0 || x == width-1 || y == height-1) {
 					i++;
 					continue;
 				}
 				int c1 = image.getRGB(x, y);
-				if(
-						getMaxChannelDifference(c1, image.getRGB(x+1, y+1)) > tolerance ||
-						getMaxChannelDifference(c1, image.getRGB(x+1, y)) > tolerance ||
-						getMaxChannelDifference(c1, image.getRGB(x, y+1)) > tolerance
-						) {
+				int differentPixels = trueCount(
+						getMaxChannelDifference(c1, image.getRGB(x+1, y)) > tolerance,
+						getMaxChannelDifference(c1, image.getRGB(x, y+1)) > tolerance,
+						getMaxChannelDifference(c1, image.getRGB(x+1, y+1)) > tolerance,
+						getMaxChannelDifference(c1, image.getRGB(x-1, y)) > tolerance,
+						getMaxChannelDifference(c1, image.getRGB(x, y-1)) > tolerance,
+						getMaxChannelDifference(c1, image.getRGB(x-1, y-1)) > tolerance,
+						getMaxChannelDifference(c1, image.getRGB(x+1, y-1)) > tolerance,
+						getMaxChannelDifference(c1, image.getRGB(x-1, y+1)) > tolerance
+						);
+				if(differentPixels > 3) {
 					pixels[i] = new Color(0).getRGB();
 				} else {
 					pixels[i] = new Color(255, 255, 255, 255).getRGB();
@@ -180,6 +189,50 @@ public class TranscendenceSpriteMaker {
 		BufferedImage b = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		setPixels(b, pixels);
 		return b;
+	}
+	public static BufferedImage edgeDetectRGB(BufferedImage image, int tolerance) {
+		int width = image.getWidth();
+		int height = image.getHeight();
+		int[] pixels = new int[width * height];
+		int i = 0;
+		for(int y = 0; y < height; y++) {
+			for(int x = 0; x < width; x++) {
+				if(x == 0 || y == 0 || x == width-1 || y == height-1) {
+					i++;
+					continue;
+				}
+				int c1 = image.getRGB(x, y);
+				int differentPixels = trueCount(
+						getRGBDifference(c1, image.getRGB(x+1, y)) > tolerance,
+						getRGBDifference(c1, image.getRGB(x, y+1)) > tolerance,
+						getRGBDifference(c1, image.getRGB(x+1, y+1)) > tolerance,
+						getRGBDifference(c1, image.getRGB(x-1, y)) > tolerance,
+						getRGBDifference(c1, image.getRGB(x, y-1)) > tolerance,
+						getRGBDifference(c1, image.getRGB(x-1, y-1)) > tolerance,
+						getRGBDifference(c1, image.getRGB(x+1, y-1)) > tolerance,
+						getRGBDifference(c1, image.getRGB(x-1, y+1)) > tolerance
+						);
+				if(differentPixels > 3) {
+					pixels[i] = new Color(0).getRGB();
+				} else {
+					pixels[i] = new Color(255, 255, 255, 255).getRGB();
+				}
+				i++;
+			}
+		}
+		
+		BufferedImage b = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		setPixels(b, pixels);
+		return b;
+	}
+	public static int trueCount(boolean... conditions) {
+		int result = 0;
+		for(boolean b : conditions) {
+			if(b) {
+				result++;
+			}
+		}
+		return result;
 	}
 	public static int getRGBDifference(int rgb1, int rgb2) {
 		int r1 = (rgb1 & 0x00ff0000) >> 16;
