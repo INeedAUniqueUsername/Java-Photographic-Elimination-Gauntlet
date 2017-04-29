@@ -164,8 +164,11 @@ public class TranscendenceSpriteMaker {
 					continue;
 				}
 				int c1 = image.getRGB(x, y);
-				int c2 = image.getRGB(x+1, y+1);
-				if(getMaxChannelDifference(c1, c2) > tolerance) {
+				if(
+						getMaxChannelDifference(c1, image.getRGB(x+1, y+1)) > tolerance ||
+						getMaxChannelDifference(c1, image.getRGB(x+1, y)) > tolerance ||
+						getMaxChannelDifference(c1, image.getRGB(x, y+1)) > tolerance
+						) {
 					pixels[i] = new Color(0).getRGB();
 				} else {
 					pixels[i] = new Color(255, 255, 255, 255).getRGB();
