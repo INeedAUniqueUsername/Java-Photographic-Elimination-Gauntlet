@@ -3,6 +3,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -76,7 +78,7 @@ public class TranscendenceSpriteMaker {
 							print("Image does not exist: " + filePath);
 							continue;
 						}
-						writeImageToPath(pencilSketch3(image), filePath);
+						writeImageToPath(pencilSketchRGBRatio(image), filePath);
 						images++;
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -94,8 +96,11 @@ public class TranscendenceSpriteMaker {
 	public static BufferedImage pencilSketch2(BufferedImage i) {
 		return createSprite(i, 15);
 	}
-	public static BufferedImage pencilSketch3(BufferedImage i) {
-		return edgeDetectChannelRatio(i, 0.6);
+	public static BufferedImage pencilSketchChannelRatio(BufferedImage i) {
+		return edgeDetectChannelRatio(i, 0.8);
+	}
+	public static BufferedImage pencilSketchRGBRatio(BufferedImage i) {
+		return edgeDetectRGBRatio(i, 0.6);
 	}
 	public static BufferedImage createSprite(BufferedImage i, int tolerance) {
 		
@@ -126,10 +131,11 @@ public class TranscendenceSpriteMaker {
 		try {
 			ImageIO.write(image, "jpg", new File(path));
 			
+			/*
 			writer.setOutput(new FileImageOutputStream(
 			  new File(path)));
 			writer.write(null, new IIOImage(image, null, null), jpgParam);
-			
+			*/
 			print("Created Image: " + path);
 		} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -328,10 +334,10 @@ public class TranscendenceSpriteMaker {
 						getRGBDifference(c1, image.getRGB(x-1, y+1)) > tolerance
 						*/
 						);
-				if(differentPixels > 3) {
-					pixels[y][x] = RGB_WHITE;
-				} else {
+				if(differentPixels > 1) {
 					pixels[y][x] = RGB_BLACK;
+				} else {
+					pixels[y][x] = RGB_WHITE;
 				}
 			}
 		}
@@ -370,10 +376,10 @@ public class TranscendenceSpriteMaker {
 						getRGBDifference(c1, image.getRGB(x-1, y+1)) > tolerance
 						*/
 						);
-				if(differentPixels > 3) {
-					pixels[y][x] = RGB_WHITE;
-				} else {
+				if(differentPixels > 1) {
 					pixels[y][x] = RGB_BLACK;
+				} else {
+					pixels[y][x] = RGB_WHITE;
 				}
 			}
 		}
