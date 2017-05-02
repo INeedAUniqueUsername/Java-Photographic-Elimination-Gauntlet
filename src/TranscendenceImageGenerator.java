@@ -52,9 +52,9 @@ public class TranscendenceImageGenerator {
 	}
 	public static void main(String[] args) {
 		
-		String outputPath = "./Output";
+		String outputPath = "./Transcendence Image Output";
 		new File(outputPath).mkdir();
-		File directory = new File(JOptionPane.showInputDialog("Specifiy image directory"));
+		File directory = new File(JOptionPane.showInputDialog("Specify image directory"));
 		processDirectory(directory, outputPath);
 		JOptionPane.showMessageDialog(null, "Processed " + images + " images in " + directories + " directories");
 	}
